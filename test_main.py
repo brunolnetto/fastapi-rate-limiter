@@ -4,20 +4,10 @@ from pytest import FixtureRequest
 from collections.abc import Iterator
 import asyncio
 import pytest_asyncio
-from asyncio import (
-    AbstractEventLoop, 
-    get_event_loop_policy
-)
-
+from asyncio import AbstractEventLoop, get_event_loop_policy
 
 from main import app, lifespan
 
-@pytest.fixture(scope="session")
-def event_loop(request: FixtureRequest) -> Iterator[AbstractEventLoop]:
-    event_loop_policy = get_event_loop_policy()
-    loop = event_loop_policy.new_event_loop()
-    yield loop
-    loop.close()
 
 @pytest_asyncio.fixture(scope="session")
 def event_loop(request: FixtureRequest) -> Iterator[AbstractEventLoop]:
