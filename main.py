@@ -5,16 +5,27 @@ from fastapi_limiter.depends import RateLimiter
 from starlette.requests import Request
 from typing import Annotated
 from contextlib import asynccontextmanager
-import os
+from dotenv import load_dotenv
 from redis import asyncio as aioredis
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-    redis = await aioredis.Redis.from_url(redis_url)
-    await FastAPILimiter.init(redis)
+    try:
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        redis = await aioredis.Redis.from_url(redis_url)
+        await FastAPILimiter.init(redis)
 
-    yield
+        yield
+    except Exception as e:
+        logger.error(f"Error during startup: {e}")
+    
 
 app = FastAPI(lifespan=lifespan)
 
@@ -35,6 +46,10 @@ app.add_exception_handler(HTTPException, rate_limit_header)
 
 MaxRateLimitDependency=Annotated[RateLimiter, Depends(RateLimiter(times=5, minutes=1))]
 RateLimit3Dependency=Annotated[RateLimiter, Depends(RateLimiter(times=3, minutes=1))]
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 @app.get("/")
 async def root(request: Request, rate_limiter: MaxRateLimitDependency):
