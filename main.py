@@ -1,12 +1,17 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
+
 from starlette.requests import Request
-from typing import Annotated
-from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 from redis import asyncio as aioredis
+
+from contextlib import asynccontextmanager
+
+from typing import Annotated
+from dotenv import load_dotenv
 import logging
 import os
 
@@ -43,9 +48,14 @@ def rate_limit_header(request: Request, exc: HTTPException):
     )
 app.add_exception_handler(HTTPException, rate_limit_exception_handler)
 app.add_exception_handler(HTTPException, rate_limit_header)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 MaxRateLimitDependency=Annotated[RateLimiter, Depends(RateLimiter(times=5, minutes=1))]
 RateLimit3Dependency=Annotated[RateLimiter, Depends(RateLimiter(times=3, minutes=1))]
+
+app.get("/favicon.ico")
+async def get_favicon():
+    return FileResponse("static/fastapi.svg")
 
 @app.get("/health")
 async def health_check():
