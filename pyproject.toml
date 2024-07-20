@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "fastapi-rate-limiter"
+version = "0.0.1"
+description = "A FastAPI app for rate-limiter testing"
+authors = ["Bruno Peixoto <brunolnetto@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.111.1"
+uvicorn = "^0.30.3"
+fastapi-limiter = "^0.1.6"
+aioredis = "^2.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.1"
+pytest-asyncio = "^0.23.8"
+pytest-cov = "^5.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
